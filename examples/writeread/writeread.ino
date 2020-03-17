@@ -1,10 +1,12 @@
 #include <SPI.h>
 #include <spieeprom.h>
 
+#define CHIP_SELECT 7
+
 byte buffer[256];
 long address;
 
-SPIEEPROM disk1(1); // parameter is type
+SPIEEPROM disk1(1, CHIP_SELECT); // parameter is type
                     // type=0: 16-bits address
                     // type=1: 24-bits address
                     // type>1: defaults to type 0

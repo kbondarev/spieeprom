@@ -21,9 +21,10 @@ SPIEEPROM::SPIEEPROM()
 
 SPIEEPROM::SPIEEPROM(byte type, int cs)
 {
-	if (type > 1)
+	if (type > EEPROM_TYPE_24BIT)
 	{
-		eeprom_type = 0;
+		// select default type
+		eeprom_type = EEPROM_TYPE_16BIT;
 	}
 	else
 	{
@@ -41,7 +42,7 @@ void SPIEEPROM::setup()
 
 void SPIEEPROM::send_address(long addr)
 {
-	if (eeprom_type == 1)
+	if (eeprom_type == EEPROM_TYPE_24BIT)
 	{
 		SPI.transfer((byte)(addr >> 16));
 	}

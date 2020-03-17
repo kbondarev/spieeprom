@@ -1,5 +1,5 @@
 /*
- * spieeprom.h - library for SPI EEPROM IC's
+ * spieeprom.cpp - library for SPI EEPROM IC's
  * https://bitbucket.org/trunet/spieeprom/
  * 
  * This library is based on code by Heather Dewey-Hagborg
@@ -14,9 +14,14 @@
 #include <WProgram.h>
 #include <SPI.h> // relies on arduino SPI library
 
+#define EEPROM_TYPE_16BIT 0
+#define EEPROM_TYPE_24BIT 1
+
 #define CS_PIN_DEFAULT 10 // SPI SS Pin                   \
 					   // on MEGA2560 should be PIN 53 \
 					   // change it if you want to use another pin
+
+
 
 //opcodes
 #define WREN 6
