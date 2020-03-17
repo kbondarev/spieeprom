@@ -12,120 +12,142 @@
 #include <SPI.h>
 #include "spieeprom.h"
 
-SPIEEPROM::SPIEEPROM() {
+SPIEEPROM::SPIEEPROM()
+{
 	eeprom_type = 0;
 	address = 0;
+	cs_pin = CS_PIN_DEFAULT;
 }
 
-SPIEEPROM::SPIEEPROM(byte type) {
-	if (type>1) {
+SPIEEPROM::SPIEEPROM(byte type, int cs)
+{
+	if (type > 1)
+	{
 		eeprom_type = 0;
-	} else {
+	}
+	else
+	{
 		eeprom_type = type;
 	}
 	address = 0;
+	cs_pin = cs;
 }
 
-void SPIEEPROM::setup() {
-	pinMode(SLAVESELECT, OUTPUT);
+void SPIEEPROM::setup()
+{
+	pinMode(cs_pin, OUTPUT);
 	SPI.begin();
 }
 
-void SPIEEPROM::send_address(long addr) {
-	if (eeprom_type == 1) {
-		SPI.transfer((byte)(addr>>16));
+void SPIEEPROM::send_address(long addr)
+{
+	if (eeprom_type == 1)
+	{
+		SPI.transfer((byte)(addr >> 16));
 	}
-	SPI.transfer((byte)(addr>>8));
+	SPI.transfer((byte)(addr >> 8));
 	SPI.transfer((byte)(addr));
 }
 
-void SPIEEPROM::start_write() {
-	digitalWrite(SLAVESELECT,LOW);
+void SPIEEPROM::start_write()
+{
+	digitalWrite(cs_pin, LOW);
 	SPI.transfer(WREN); //send WREN command
-	digitalWrite(SLAVESELECT,HIGH);
-	digitalWrite(SLAVESELECT,LOW);
+	digitalWrite(cs_pin, HIGH);
+	digitalWrite(cs_pin, LOW);
 	SPI.transfer(WRITE); //send WRITE command
 }
 
-bool SPIEEPROM::isWIP() {
+bool SPIEEPROM::isWIP()
+{
 	byte data;
-	
-	digitalWrite(SLAVESELECT,LOW);
+
+	digitalWrite(cs_pin, LOW);
 	SPI.transfer(RDSR); // send RDSR command
-	
+
 	data = SPI.transfer(0xFF); //get data byte
-	
-	digitalWrite(SLAVESELECT,HIGH);
-	
+
+	digitalWrite(cs_pin, HIGH);
+
 	return (data & (1 << 0));
 }
 
-void SPIEEPROM::write(long addr, byte data) {
+void SPIEEPROM::write(long addr, byte data)
+{
 	start_write();
-	
+
 	send_address(addr); // send address
 	SPI.transfer(data); // transfer data
-	
-	digitalWrite(SLAVESELECT,HIGH);
-	
-	while (isWIP()) {
+
+	digitalWrite(cs_pin, HIGH);
+
+	while (isWIP())
+	{
 		delay(1);
 	}
 }
 
-void SPIEEPROM::write(long addr, byte data[], int arrLength) {
+void SPIEEPROM::write(long addr, byte data[], int arrLength)
+{
 	start_write();
-	
+
 	send_address(addr); // send address
 
-	for (int i=0;i<arrLength;i++) {
+	for (int i = 0; i < arrLength; i++)
+	{
 		SPI.transfer(data[i]); // transfer data
 	}
-	
-	digitalWrite(SLAVESELECT,HIGH);
-	while (isWIP()) {
+
+	digitalWrite(cs_pin, HIGH);
+	while (isWIP())
+	{
 		delay(1);
 	}
 }
 
-void SPIEEPROM::write(long addr, char data[], int arrLength) {
+void SPIEEPROM::write(long addr, char data[], int arrLength)
+{
 	start_write();
-	
+
 	send_address(addr); // send address
-	
-	for (int i=0;i<arrLength;i++) {
+
+	for (int i = 0; i < arrLength; i++)
+	{
 		SPI.transfer(data[i]); // transfer data
 	}
-	
-	digitalWrite(SLAVESELECT,HIGH);
-	while (isWIP()) {
+
+	digitalWrite(cs_pin, HIGH);
+	while (isWIP())
+	{
 		delay(1);
 	}
 }
 
-byte SPIEEPROM::read_byte(long addr) {
+byte SPIEEPROM::read_byte(long addr)
+{
 	byte data;
-	
-	digitalWrite(SLAVESELECT,LOW);
+
+	digitalWrite(cs_pin, LOW);
 	SPI.transfer(READ); // send READ command
-	
-	send_address(addr); // send address
+
+	send_address(addr);		   // send address
 	data = SPI.transfer(0xFF); //get data byte
-	
-	digitalWrite(SLAVESELECT,HIGH); //release chip, signal end transfer
-	
+
+	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
+
 	return data;
 }
 
-char SPIEEPROM::read_char(long addr) {
+char SPIEEPROM::read_char(long addr)
+{
 	char data;
-	
-	digitalWrite(SLAVESELECT,LOW);
+
+	digitalWrite(cs_pin, LOW);
 	SPI.transfer(READ); // send READ command
-	
-	send_address(addr); // send address
+
+	send_address(addr);		   // send address
 	data = SPI.transfer(0xFF); //get data byte
-	
-	digitalWrite(SLAVESELECT,HIGH); //release chip, signal end transfer
+
+	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
 	return data;
 }
