@@ -8,7 +8,7 @@
  * by Wagner Sartori Junior <wsartori@gmail.com>
  */
 
-#include <WProgram.h>
+#include <Arduino.h>
 #include <SPI.h>
 #include "spieeprom.h"
 
@@ -137,6 +137,21 @@ byte SPIEEPROM::read_byte(long addr)
 	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
 
 	return data;
+}
+
+void SPIEEPROM::read_byte_array(long addr, byte data[], int arrLength)
+{
+
+	digitalWrite(cs_pin, LOW);
+	SPI.transfer(READ); // send READ command
+
+	send_address(addr);		   // send address
+	for (int i = 0; i < arrLength; i++)
+	{
+		data[i] = SPI.transfer(0xFF); //get data byte
+	}
+
+	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
 }
 
 char SPIEEPROM::read_char(long addr)

@@ -11,7 +11,7 @@
 #ifndef SPIEEPROM_h
 #define SPIEEPROM_h
 
-#include <WProgram.h>
+#include <Arduino.h>
 #include <SPI.h> // relies on arduino SPI library
 
 #define EEPROM_TYPE_16BIT 0
@@ -59,7 +59,7 @@ public:
 	//void write(long addr, float data);
 
 	byte read_byte(long addr);
-	//void  read_byte_array (long addr, byte data[]);
+	void read_byte_array (long addr, byte data[], int arrLength);
 	char read_char(long addr);
 	//void  read_char_array (long addr, char data[]);
 	//int   read_int  (long addr);
