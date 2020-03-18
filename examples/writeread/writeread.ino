@@ -29,7 +29,7 @@ void setup() {
 	
 	Serial.print("Starting to write on EEPROM:");
 	Serial.print(millis());
-	Serial.print('\n',BYTE);
+	Serial.println();
 	
 	disk1.write(address, buffer, (sizeof(buffer)/sizeof(byte)));
 	
@@ -45,7 +45,7 @@ void loop() {
 	Serial.print(address);
 	Serial.print("| - Value:|");
 	Serial.print(disk1.read_byte(address), DEC);
-	Serial.print("|\n");
+	Serial.println("|");
 	address++;
 	if (address == 256)
 		address = 0;
