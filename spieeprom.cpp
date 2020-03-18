@@ -1,22 +1,12 @@
-/*
- * spieeprom.cpp - library for SPI EEPROM IC's
- * https://bitbucket.org/trunet/spieeprom/
- * 
- * This library is based on code by Heather Dewey-Hagborg
- * available on http://www.arduino.cc/en/Tutorial/SPIEEPROM
- * 
- * by Wagner Sartori Junior <wsartori@gmail.com>
- */
-
 #include <Arduino.h>
 #include <SPI.h>
 #include "spieeprom.h"
 
 SPIEEPROM::SPIEEPROM()
 {
-	eeprom_type = 0;
+	eepromType = 0;
 	address = 0;
-	cs_pin = CS_PIN_DEFAULT;
+	csPin = CS_PIN_DEFAULT;
 }
 
 SPIEEPROM::SPIEEPROM(byte type, int cs)
@@ -24,25 +14,25 @@ SPIEEPROM::SPIEEPROM(byte type, int cs)
 	if (type > EEPROM_TYPE_24BIT)
 	{
 		// select default type
-		eeprom_type = EEPROM_TYPE_16BIT;
+		eepromType = EEPROM_TYPE_16BIT;
 	}
 	else
 	{
-		eeprom_type = type;
+		eepromType = type;
 	}
 	address = 0;
-	cs_pin = cs;
+	csPin = cs;
 }
 
 void SPIEEPROM::setup()
 {
-	pinMode(cs_pin, OUTPUT);
+	pinMode(csPin, OUTPUT);
 	SPI.begin();
 }
 
-void SPIEEPROM::send_address(long addr)
+void SPIEEPROM::sendAddress(long addr)
 {
-	if (eeprom_type == EEPROM_TYPE_24BIT)
+	if (eepromType == EEPROM_TYPE_24BIT)
 	{
 		SPI.transfer((byte)(addr >> 16));
 	}
@@ -50,12 +40,12 @@ void SPIEEPROM::send_address(long addr)
 	SPI.transfer((byte)(addr));
 }
 
-void SPIEEPROM::start_write()
+void SPIEEPROM::startWrite()
 {
-	digitalWrite(cs_pin, LOW);
+	digitalWrite(csPin, LOW);
 	SPI.transfer(WREN); //send WREN command
-	digitalWrite(cs_pin, HIGH);
-	digitalWrite(cs_pin, LOW);
+	digitalWrite(csPin, HIGH);
+	digitalWrite(csPin, LOW);
 	SPI.transfer(WRITE); //send WRITE command
 }
 
@@ -63,24 +53,24 @@ bool SPIEEPROM::isWIP()
 {
 	byte data;
 
-	digitalWrite(cs_pin, LOW);
+	digitalWrite(csPin, LOW);
 	SPI.transfer(RDSR); // send RDSR command
 
 	data = SPI.transfer(0xFF); //get data byte
 
-	digitalWrite(cs_pin, HIGH);
+	digitalWrite(csPin, HIGH);
 
 	return (data & (1 << 0));
 }
 
 void SPIEEPROM::write(long addr, byte data)
 {
-	start_write();
+	startWrite();
 
-	send_address(addr); // send address
+	sendAddress(addr); // send address
 	SPI.transfer(data); // transfer data
 
-	digitalWrite(cs_pin, HIGH);
+	digitalWrite(csPin, HIGH);
 
 	while (isWIP())
 	{
@@ -90,80 +80,50 @@ void SPIEEPROM::write(long addr, byte data)
 
 void SPIEEPROM::write(long addr, byte data[], int arrLength)
 {
-	start_write();
+	startWrite();
 
-	send_address(addr); // send address
-
-	for (int i = 0; i < arrLength; i++)
-	{
-		SPI.transfer(data[i]); // transfer data
-	}
-
-	digitalWrite(cs_pin, HIGH);
-	while (isWIP())
-	{
-		delay(1);
-	}
-}
-
-void SPIEEPROM::write(long addr, char data[], int arrLength)
-{
-	start_write();
-
-	send_address(addr); // send address
+	sendAddress(addr); // send address
 
 	for (int i = 0; i < arrLength; i++)
 	{
 		SPI.transfer(data[i]); // transfer data
 	}
 
-	digitalWrite(cs_pin, HIGH);
+	digitalWrite(csPin, HIGH);
 	while (isWIP())
 	{
 		delay(1);
 	}
 }
 
-byte SPIEEPROM::read_byte(long addr)
+byte SPIEEPROM::readByte(long addr)
 {
 	byte data;
 
-	digitalWrite(cs_pin, LOW);
+	digitalWrite(csPin, LOW);
 	SPI.transfer(READ); // send READ command
 
-	send_address(addr);		   // send address
+	sendAddress(addr);		   // send address
 	data = SPI.transfer(0xFF); //get data byte
 
-	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
+	digitalWrite(csPin, HIGH); //release chip, signal end transfer
 
 	return data;
 }
 
-void SPIEEPROM::read_byte_array(long addr, byte data[], int arrLength)
+void SPIEEPROM::readByteArray(long addr, byte data[], int arrLength)
 {
 
-	digitalWrite(cs_pin, LOW);
+	digitalWrite(csPin, LOW);
 	SPI.transfer(READ); // send READ command
 
-	send_address(addr);		   // send address
+	sendAddress(addr);		   // send address
 	for (int i = 0; i < arrLength; i++)
 	{
+		// the EEPROM chip has an internal counter and will continue sending the
+		// next bytes
 		data[i] = SPI.transfer(0xFF); //get data byte
 	}
 
-	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
-}
-
-char SPIEEPROM::read_char(long addr)
-{
-	char data;
-
-	digitalWrite(cs_pin, LOW);
-	SPI.transfer(READ); // send READ command
-
-	send_address(addr);		   // send address
-	data = SPI.transfer(0xFF); //get data byte
-
-	digitalWrite(cs_pin, HIGH); //release chip, signal end transfer
-	return data;
+	digitalWrite(csPin, HIGH); //release chip, signal end transfer
 }

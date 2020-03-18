@@ -6,7 +6,7 @@
 byte buffer[256];
 long address;
 
-SPIEEPROM disk1(1, CHIP_SELECT); // parameter is type
+SPIEEPROM disk1(EEPROM_TYPE_16BIT, CHIP_SELECT); // parameter is type
                     // type=0: 16-bits address
                     // type=1: 24-bits address
                     // type>1: defaults to type 0
@@ -44,7 +44,7 @@ void loop() {
 	Serial.print("Address:|");
 	Serial.print(address);
 	Serial.print("| - Value:|");
-	Serial.print(disk1.read_byte(address), DEC);
+	Serial.print(disk1.readByte(address), DEC);
 	Serial.println("|");
 	address++;
 	if (address == 256)
